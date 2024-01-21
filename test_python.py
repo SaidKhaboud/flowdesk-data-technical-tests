@@ -28,7 +28,7 @@ data = [
     },
 ]
 df = pd.DataFrame(data)
-print(df)
+#print(df)
 
 kind_To_Type = {
     "i": "INTEGER",
@@ -51,11 +51,22 @@ def generate_bigquery_schema_from_pandas(df: pd.DataFrame) -> List[dict]:
             fields = ()
         
         type = "RECORD" if fields else kind_To_Type.get(col_type.kind)
-
-        schema.append(
-            {"name":col_name,
-            "type": type,
-            "mode": mode}
-        )
+        
+        if fields:
+                schema.append(
+                {"name":col_name,
+                "type": type,
+                "mode": mode,
+                "fields": fields}
+            )
+        else:
+            schema.append(
+                {"name":col_name,
+                "type": type,
+                "mode": mode}
+            )
     
     return schema
+
+schema = generate_bigquery_schema_from_pandas(df)
+print(schema)
