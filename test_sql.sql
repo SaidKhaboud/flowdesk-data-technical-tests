@@ -1,6 +1,8 @@
 with ranked_indexes as (
     select
     t.transaction_id,
+    t.account_id,
+    t.client_id,
     t.currency_1,
     t.currency_2,
     t.exchange,
@@ -8,7 +10,7 @@ with ranked_indexes as (
     t.executed_at,
     i.value,
     i.updated_at,
-    ROW_NUMBER() OVER (PARTITION BY t.currency_1, t.currency_2, t.exchange, t.exchange_type ORDER BY ABS(TIMESTAMPDIFF(SECOND, t.executed_at, i.updzted_at))) AS rn
+    ROW_NUMBER() OVER (PARTITION BY t.currency_1, t.currency_2, t.exchange, t.exchange_type ORDER BY ABS(TIMESTAMP_DIFF(t.executed_at, i.updzted_at, SECOND))) AS rn
     FROM
         trades t
     JOIN
