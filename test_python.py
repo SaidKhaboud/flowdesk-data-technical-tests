@@ -2,6 +2,7 @@
 
 import datetime
 import pandas as pd
+from typing import List
 
 data = [
     {
@@ -29,6 +30,32 @@ data = [
 df = pd.DataFrame(data)
 print(df)
 
+kind_To_Type = {
+    "i": "INTEGER",
+    "u": "NUMERIC",
+    "b": "BOOLEAN",
+    "f": "FLOAT",
+    "O": "STRING",
+    "S": "STRING",
+    "U": "STRING",
+    "M": "TIMESTAMP",
+}
+def generate_bigquery_schema_from_pandas(df: pd.DataFrame) -> List[dict]:
+    schema = []
+    for col_name, col_type in zip(df.columns, df.dtypes):
+        val = df[col_name].iloc[0]
+        mode = "REPEATED" if isinstance(val, list) else "NULLABLE"
+        if isinstance(val, dict) or (mode == "REPEATED" and isinstance(val[0], dict)):
+            fields = generate_bigquery_schema_from_pandas(pd.json_normalize(val))
+        else:
+            fields = ()
+        
+        type = "RECORD" if fields else kind_To_Type.get(col_type.kind)
 
-def generate_bigquery_schema_from_pandas(df: pd.DataFrame) -> list[dict]:
-    return
+        schema.append(
+            {"name":col_name,
+            "type": type,
+            "mode": mode}
+        )
+    
+    return schema
