@@ -1,3 +1,7 @@
+/*
+I tested this query on Bigquery because I was unable to run the provided
+docker-compose file on my personal laptop due to ram limitations.
+*/
 with ranked_indexes as (
     select
     t.transaction_id,

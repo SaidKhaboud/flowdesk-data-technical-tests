@@ -30,6 +30,7 @@ data = [
 df = pd.DataFrame(data)
 #print(df)
 
+# Dict to convert pandas kind to BQ type
 kind_To_Type = {
     "i": "INTEGER",
     "u": "NUMERIC",
@@ -42,16 +43,22 @@ kind_To_Type = {
 }
 def generate_bigquery_schema_from_pandas(df: pd.DataFrame) -> List[dict]:
     schema = []
+    # loop over df columns
     for col_name, col_type in zip(df.columns, df.dtypes):
         val = df[col_name].iloc[0]
+        # set the mode
         mode = "REPEATED" if isinstance(val, list) else "NULLABLE"
+        # if the column contains a list or a dict make a recursive call to get the schema of the column
         if isinstance(val, dict) or (mode == "REPEATED" and isinstance(val[0], dict)):
+            # use pd.json_normalize to transform the list or dict into a dataframe
             fields = generate_bigquery_schema_from_pandas(pd.json_normalize(val))
         else:
             fields = ()
         
+        # get the type from the map above or set it to record
         type = "RECORD" if fields else kind_To_Type.get(col_type.kind)
         
+        # add the field to the schema
         if fields:
                 schema.append(
                 {"name":col_name,
